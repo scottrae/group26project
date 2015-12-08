@@ -1,9 +1,12 @@
 import java.io.IOException;
+import java.io.PrintWriter;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.*;
@@ -20,28 +23,38 @@ public class Anim extends HttpServlet {
 
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		BufferedImage image = new BufferedImage(150, 200, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = image.createGraphics();
-		g.setRenderingHint(
-				RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-		doPost(request,response);
+		if (request.getParameter("c1")==null){
+			response.setContentType("text/html");
+			PrintWriter out = response.getWriter();
+			out.println("<form>");
+			out.println("Star's Colour: <input name='c1' value='FF0000'/><br>");
+			out.println("Background's Colour: <input name='c1' value='FF00FF'/><br>");
+			out.println("<input type='submit'/>");
+			out.println("</form>");
+		}else{
+			response.setContentType("image/gif");
+			BufferedImage image = new BufferedImage(150, 200, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = image.createGraphics();
+			g.setRenderingHint(
+					RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+			doPost(request,response);
+			Color c1 = new Color(Integer.parseInt(request.getParameter("c1"),16));
+			Color c2 = new Color(Integer.parseInt(request.getParameter("c2"),16));
+	    int frame = 30;
+		int r = 20;
+		Polygon star = new Polygon(
+				new int[]{0,22,95,36,59,0,-59,-36,-95,-22},
+				new int[]{-100,-31,-31,12,81,38,81,12,-31,-31},10);
+		g.setColor(c2);
+		g.fillRect(0,0,300,200);
+		g.setColor(c1);
+		g.translate(75,50);
+		g.scale(r/100.0,r/100.0);
+		g.rotate(2*frame*Math.PI/20);
+		g.fillPolygon(star);
 	}
-
-	static void drawFrame(Graphics2D g, int frame){
-		  int r = 20;
-		  Polygon star = new Polygon(
-		   new int[]{0,22,95,36,59,0,-59,-36,-95,-22},
-		   new int[]{-100,-31,-31,12,81,38,81,12,-31,-31},10);
-		  g.setColor(Color.red);
-		  g.fillRect(0,0,300,200);
-		  g.setColor(Color.yellow);
-		  g.translate(75,50);
-		  g.scale(r/100.0,r/100.0);
-		  g.rotate(2*frame*Math.PI/20);
-		  g.fillPolygon(star);
-		}
-
+	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {   
@@ -50,7 +63,7 @@ public class Anim extends HttpServlet {
 			Gif89Encoder genc = new Gif89Encoder(); 
 			for (int i=0;i<20;i++){ 
 				Graphics2D g = image.createGraphics();
-				drawFrame(g,i);
+				drawframe(g,i);
 				genc.addFrame(image);
 				g.dispose();
 			}
@@ -62,4 +75,3 @@ public class Anim extends HttpServlet {
 		}
 	}
 }
-
